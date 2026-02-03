@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.gradio.app)",
+      "Bash(./venv/bin/python:*)"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+# LlamaCloud - Document parsing, indexing, and retrieval
+llama-cloud
+llama-index
+llama-index-indices-managed-llama-cloud
+llama-parse
+llama-index-embeddings-openai
+llama-index-llms-gemini
+
+# PDF processing (fallback)
+PyMuPDF
+pytesseract
+Pillow
+
+# Configuration
+pydantic
+pydantic-settings
+python-dotenv
+
+#Utillities
+tenacity
+tqdm
+gradio
