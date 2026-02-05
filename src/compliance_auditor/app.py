@@ -9,8 +9,12 @@ A web interface with split-panel layout:
 import logging
 from pathlib import Path
 from typing import Generator
-
 import gradio as gr
+import os
+from llama_index.llms.gemini import Gemini
+from llama_index.core.llms import ChatMessage, MessageRole
+from llama_index.core.vector_stores import MetadataFilters, MetadataFilter, FilterOperator
+from compliance_auditor.config import get_settings
 
 from compliance_auditor.llama_cloud import LlamaCloudParser, LlamaCloudIndex
 from compliance_auditor.llama_cloud.index import stream_chat_with_context
@@ -29,7 +33,7 @@ DOC_TYPE_LABELS = {
 }
 
 DOC_TYPE_FROM_LABEL = {v: k for k, v in DOC_TYPE_LABELS.items()}
-
+settings = get_settings()
 
 def get_parser() -> LlamaCloudParser:
     """Get or create the parser instance."""
@@ -108,9 +112,10 @@ def delete_document(doc_id: str, doc_type_label: str) -> str:
         return "Please enter a document ID."
 
     doc_type = DOC_TYPE_FROM_LABEL.get(doc_type_label, "regulation")
-
+    
     try:
         llama_index = get_index()
+        
         llama_index.delete_document(doc_id.strip(), doc_type)
         return f"Deleted '{doc_id}'"
 
@@ -140,58 +145,65 @@ def retrieve_document_context(
         Tuple of (compliance_content, internal_content)
     """
     llama_index = get_index()
-
+    regulations_index, _ = llama_index._get_or_create_index("regulation")
+    company_docs_index, _ = llama_index._get_or_create_index("company_doc")
     logger.info(f"Retrieving context: compliance={selected_compliance}, internal={selected_internal}")
 
     # Build queries appropriate for each document type
     # Include user query if provided to retrieve relevant sections
-    compliance_base_query = "regulations requirements compliance rules standards obligations"
-    internal_base_query = "company policy requirements procedures implementation practices"
-
-    if user_query:
-        compliance_query = f"{user_query} {compliance_base_query}"
-        internal_query = f"{user_query} {internal_base_query}"
-    else:
-        compliance_query = compliance_base_query
-        internal_query = internal_base_query
-
-    # Retrieve content from compliance documents
+    llm = Gemini(model="gemini-3-flash-preview", api_key=settings.google_api_key)
     compliance_content = ""
     if selected_compliance:
-        for doc_id in selected_compliance:
-            try:
-                results = llama_index.search(
-                    compliance_query,
-                    "regulation",
-                    top_k=15,  # Get more chunks to ensure good coverage
-                    filter_doc_id=doc_id
+        system_prompt = f"""You are a document assistant. Your role is to:
+        1. Turn user's query into a prompt for another LLM that is an expert on compliance documents relavent to this query
+        2. Make sure to carefully review the user's query include all relevant details in the prompt you produce.
+        """
+        messages = [ChatMessage(role=MessageRole.SYSTEM, content=system_prompt)]
+        messages.append(ChatMessage(role=MessageRole.USER, content=user_query))
+        response = llm.chat(messages)
+        compliance_query = response.message.content 
+
+        # Retrieve content from compliance documents
+        filters = MetadataFilters(
+            filters=[
+                MetadataFilter(
+                    key="doc_id",
+                    operator=FilterOperator.IN,
+                    value=selected_compliance
                 )
-                logger.info(f"Compliance doc '{doc_id}': found {len(results)} results")
-                if results:
-                    compliance_content += f"\n\n### {doc_id}:\n"
-                    compliance_content += "\n".join([r.text for r in results])
-            except Exception as e:
-                logger.warning(f"Failed to retrieve compliance doc {doc_id}: {e}")
+            ]
+        )
+        query_engine = regulations_index.as_query_engine(llm=llm, filters=filters)
+        response = query_engine.query(compliance_query)
+        compliance_content = str(response)
 
     # Retrieve content from internal documents
     internal_content = ""
     if selected_internal:
-        for doc_id in selected_internal:
-            try:
-                results = llama_index.search(
-                    internal_query,
-                    "company_doc",
-                    top_k=15,  # Get more chunks to ensure good coverage
-                    filter_doc_id=doc_id
-                )
-                logger.info(f"Internal doc '{doc_id}': found {len(results)} results")
-                if results:
-                    internal_content += f"\n\n### {doc_id}:\n"
-                    internal_content += "\n".join([r.text for r in results])
-            except Exception as e:
-                logger.warning(f"Failed to retrieve internal doc {doc_id}: {e}")
+        system_prompt = f"""You are a document assistant. Your role is to:
 
-    logger.info(f"Retrieved - Compliance: {len(compliance_content)} chars, Internal: {len(internal_content)} chars")
+        1. Turn user's query into a prompt for another LLM that is an expert on company internal documents relavent to this query
+        2. Make sure to carefully review the user's query include all relevant details in the prompt you produce, 
+        The user has selected the following documents to search: {selected_internal}
+        """
+        messages = [ChatMessage(role=MessageRole.SYSTEM, content=system_prompt)]
+        messages.append(ChatMessage(role=MessageRole.USER, content=user_query))
+        response = llm.chat(messages)
+        internal_query = response.message.content
+        
+
+        filters = MetadataFilters(
+            filters=[
+                MetadataFilter(
+                    key="doc_id",
+                    operator=FilterOperator.IN,
+                    value=selected_internal
+                )
+            ]
+        )
+        query_engine = company_docs_index.as_query_engine(llm=llm, filters=filters)
+        response = query_engine.query(internal_query)
+        internal_content = str(response)
 
     return compliance_content, internal_content
 
@@ -230,17 +242,16 @@ def handle_chat_message(
     yield chat_history, chat_history, context_state
 
     try:
-        # Get or retrieve document context
-        if context_state is None:
-            compliance_content, internal_content = retrieve_document_context(
-                selected_compliance or [],
-                selected_internal or [],
-                user_query=message  # Include user's message in retrieval
-            )
-            context_state = {
-                "compliance": compliance_content,
-                "internal": internal_content
-            }
+        # Always retrieve fresh document context based on current selections
+        compliance_content, internal_content = retrieve_document_context(
+            selected_compliance or [],
+            selected_internal or [],
+            user_query=message  # Include user's message in retrieval
+        )
+        context_state = {
+            "compliance": compliance_content,
+            "internal": internal_content
+        }
 
         # Stream response directly from Gemini with both document contexts
         chat_history = chat_history + [{"role": "assistant", "content": ""}]
@@ -351,13 +362,16 @@ CUSTOM_CSS = """
     display: flex;
     flex-direction: column;
 }
+footer {
+    display: none !important;
+}
 """
 
 
 def create_app() -> gr.Blocks:
     """Create the Gradio application with split-panel layout."""
 
-    with gr.Blocks(title="Compliance Auditor") as app:
+    with gr.Blocks(title="Compliance Auditor", analytics_enabled=False, css=CUSTOM_CSS) as app:
         gr.Markdown("# Compliance Auditor")
         gr.Markdown("Manage documents on the left, chat about compliance on the right.")
 

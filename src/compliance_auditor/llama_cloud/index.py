@@ -31,7 +31,7 @@ def get_gemini_llm() -> Gemini:
     if _gemini_llm is None:
         settings = get_settings()
         os.environ["GOOGLE_API_KEY"] = settings.google_api_key
-        _gemini_llm = Gemini(model="gemini-2.5-flash", api_key=settings.google_api_key)
+        _gemini_llm = Gemini(model="gemini-3-flash-preview", api_key=settings.google_api_key)
         logger.info("Gemini LLM initialized")
     return _gemini_llm
 
@@ -286,9 +286,11 @@ class LlamaCloudIndex:
             **parsed_doc.metadata,
         }
 
+        # IMPORTANT: Set id_=doc_id so LlamaCloud uses our doc_id as the ref_doc_id
         document = Document(
             text=parsed_doc.text,
             metadata=metadata,
+            id_=doc_id,
             doc_id=doc_id,
         )
 
@@ -335,6 +337,8 @@ class LlamaCloudIndex:
         parsed_doc = parser.parse(file_path)
 
         # Create a Document for the index
+        # IMPORTANT: Set id_=doc_id so LlamaCloud uses our doc_id as the ref_doc_id
+        # This enables deletion by doc_id later
         document = Document(
             text=parsed_doc.text,
             metadata={
@@ -343,6 +347,7 @@ class LlamaCloudIndex:
                 "filename": parsed_doc.filename,
                 "page_count": parsed_doc.page_count,
             },
+            id_=doc_id,
             doc_id=doc_id,
         )
 
@@ -386,11 +391,14 @@ class LlamaCloudIndex:
         # Execute query
         nodes = retriever.retrieve(query)
 
+        # Debug: log what ref_doc_ids are in the retrieved nodes
+        logger.info(f"Retrieved {len(nodes)} nodes, ref_doc_ids: {[getattr(n, 'ref_doc_id', None) for n in nodes]}")
+
         search_results = []
         for node in nodes:
             # Apply doc_id filter if specified
             if filter_doc_id:
-                node_doc_id = node.metadata.get("doc_id", "")
+                node_doc_id = getattr(node, 'ref_doc_id', None) or node.node_id
                 if node_doc_id != filter_doc_id:
                     continue
 
@@ -399,7 +407,7 @@ class LlamaCloudIndex:
                     text=node.text,
                     score=node.score if node.score else 0.0,
                     metadata=dict(node.metadata) if node.metadata else {},
-                    doc_id=node.metadata.get("doc_id", "") if node.metadata else "",
+                    doc_id=getattr(node, 'ref_doc_id', None) or node.node_id,
                 )
             )
 
@@ -418,18 +426,14 @@ class LlamaCloudIndex:
         try:
             index, _ = self._get_or_create_index(doc_type)
 
-            # Get all nodes and extract unique doc_ids
-            doc_ids = set()
+            # Use ref_doc_info to get all documents (not semantic search)
+            # Note: ref_doc_info is a property in some versions, a method in others
+            ref_docs = index.ref_doc_info
+            if callable(ref_docs):
+                ref_docs = ref_docs()
 
-            # Query with a generic prompt to get all documents
-            retriever = index.as_retriever(similarity_top_k=100)
-            nodes = retriever.retrieve("list all documents")
-
-            for node in nodes:
-                if node.metadata and "doc_id" in node.metadata:
-                    doc_ids.add(node.metadata["doc_id"])
-
-            return sorted(list(doc_ids))
+            # ref_doc_info returns {doc_id: RefDocInfo}, so keys are the doc IDs
+            return sorted(list(ref_docs.keys()))
         except Exception as e:
             logger.warning(f"Could not retrieve all documents: {e}")
             return []
@@ -446,12 +450,45 @@ class LlamaCloudIndex:
             doc_id: Document ID to delete
             doc_type: Index to delete from
         """
+        import time
+
+        index_name = self._get_index_name(doc_type)
         index, _ = self._get_or_create_index(doc_type)
 
-        # Delete by doc_id
-        index.delete_ref_doc(doc_id)
+        # Get current documents to verify doc exists
+        current_docs = self.get_all_documents(doc_type)
+        logger.info(f"Documents in index before delete: {current_docs}")
+        logger.info(f"Attempting to delete doc_id: '{doc_id}'")
 
-        logger.info(f"Deleted document '{doc_id}' from {doc_type} index")
+        # Check if doc_id exists in the index
+        if doc_id not in current_docs:
+            logger.warning(f"Document '{doc_id}' not found in index. Available: {current_docs}")
+            return
+
+        # WORKAROUND: The SDK's delete_ref_doc uses quote_plus(quote_plus(doc_id))
+        # which double-encodes the ID, causing 404 errors for IDs with spaces.
+        # Call the API directly with the raw doc_id instead.
+        client = index._client
+        pipeline_id = index.id
+        client.pipelines.delete_pipeline_document(
+            pipeline_id=pipeline_id,
+            document_id=doc_id,
+        )
+        logger.info(f"Sent delete request for '{doc_id}'")
+
+        # Invalidate the cached index to force a fresh connection
+        if index_name in self._indexes:
+            del self._indexes[index_name]
+
+        # Verify deletion with polling (LlamaCloud processes async)
+        for _ in range(5):
+            time.sleep(2)
+            docs = self.get_all_documents(doc_type)
+            if doc_id not in docs:
+                logger.info(f"Verified deletion of '{doc_id}' from {doc_type} index")
+                return
+
+        logger.warning(f"Document '{doc_id}' may not have been fully deleted from LlamaCloud")
 
     def as_query_engine(self, doc_type: str, **kwargs):
         """
