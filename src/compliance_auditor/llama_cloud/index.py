@@ -56,24 +56,26 @@ def chat_with_context(
     """
     llm = get_gemini_llm()
 
-    system_prompt = f"""You are a compliance analysis assistant. Your role is to:
-1. Analyze internal requirement documents against compliance regulations
-2. Identify compliance gaps and issues
-3. Provide specific recommendations for achieving compliance
+    system_prompt = f"""You are a compliance analysis assistant.
 
-## COMPLIANCE DOCUMENTS:
-{compliance_context if compliance_context else "No compliance documents selected."}
-
-## INTERNAL REQUIREMENT DOCUMENTS:
+## INTERNAL COMPANY DOCUMENTS:
 {internal_context if internal_context else "No internal documents selected."}
 
-When answering questions:
-- Compare the internal documents against the compliance documents
-- Reference specific sections from both document types
-- Clearly state compliance status (Compliant / Partially Compliant / Non-Compliant)
-- Identify specific gaps between internal requirements and compliance regulations
-- Provide actionable recommendations
-- If the user greets you or asks something unrelated, respond naturally but guide them back to compliance analysis"""
+## REQUIREMENT-BY-REQUIREMENT COMPLIANCE ANALYSIS:
+{compliance_context if compliance_context else "No compliance analysis available. Select both internal and compliance documents."}
+
+## Instructions:
+Based on the analysis above, provide a compliance assessment.
+
+CRITICAL: You MUST address EVERY requirement listed above - do NOT skip any. For each requirement, state whether it is compliant, has gaps or relevant requirements can't be found.
+
+Format your response as:
+1. **Summary**: Overall compliance status (Compliant / Partially Compliant / Non-Compliant) with count (e.g., "X of Y requirements compliant")
+2. **Requirement-by-Requirement Analysis**: Go through EACH requirement and state its compliance status
+3. **Gaps Identified**: List all requirements with compliance issues and explain each gap
+4. **Recommendations**: Actionable steps to address gaps
+
+Be specific and reference actual document content. Answer the user's specific question if asked."""
 
     # Build messages list
     messages = [ChatMessage(role=MessageRole.SYSTEM, content=system_prompt)]
@@ -112,24 +114,30 @@ def stream_chat_with_context(
     """
     llm = get_gemini_llm()
 
-    system_prompt = f"""You are a compliance analysis assistant. Your role is to:
-1. Analyze internal requirement documents against compliance regulations
-2. Identify compliance gaps and issues
-3. Provide specific recommendations for achieving compliance
+    system_prompt = f"""You are a compliance analysis assistant.
 
-## COMPLIANCE DOCUMENTS:
-{compliance_context if compliance_context else "No compliance documents selected."}
-
-## INTERNAL REQUIREMENT DOCUMENTS:
+## INTERNAL COMPANY DOCUMENTS:
 {internal_context if internal_context else "No internal documents selected."}
 
-When answering questions:
-- Compare the internal documents against the compliance documents
-- Reference specific sections from both document types
-- Clearly state compliance status (Compliant / Partially Compliant / Non-Compliant)
-- Identify specific gaps between internal requirements and compliance regulations
-- Provide actionable recommendations
-- If the user greets you or asks something unrelated, respond naturally but guide them back to compliance analysis"""
+## REQUIREMENT-BY-REQUIREMENT COMPLIANCE ANALYSIS:
+{compliance_context if compliance_context else "No compliance analysis available. Select both internal and compliance documents."}
+
+## Instructions:
+Based on the analysis above, provide a compliance assessment.
+
+CRITICAL: You MUST address EVERY requirement listed above - do NOT skip any. 
+For each requirement, state whether it is compliant or has gaps.
+If no documents are selected, say "No documents selected" and do not attempt to analyze compliance.
+If only compliance documents are selected, analyze compliance but note that no internal documents were provided.
+If only internal documents are selected, say that compliance analysis cannot be performed without compliance documents.
+
+Format your response as:
+1. **Summary**: Overall compliance status (Compliant / Partially Compliant / Non-Compliant) with count (e.g., "X of Y requirements compliant")
+2. **Requirement-by-Requirement Analysis**: Go through EACH requirement and state its compliance status
+3. **Gaps Identified**: List all requirements with compliance issues and explain each gap
+4. **Recommendations**: Make recommendations to ALL requirements found non-compliant or partially compliant
+
+Be specific and reference actual document content. Answer the user's specific question if asked."""
 
     # Build messages list
     messages = [ChatMessage(role=MessageRole.SYSTEM, content=system_prompt)]

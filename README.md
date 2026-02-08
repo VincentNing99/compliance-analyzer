@@ -8,7 +8,7 @@ A web application for analyzing internal documents against compliance regulation
   - **Compliance Documents**: Regulatory standards (GDPR, HIPAA, FAA Part 450, etc.)
   - **Internal Documents**: Company policies and procedures to check for compliance
 
-- **AI-Powered Analysis**: Chat interface powered by Google Gemini 2.5 Flash that:
+- **AI-Powered Analysis**: Chat interface powered by Google Gemini that:
   - Compares internal documents against compliance regulations
   - Identifies compliance gaps and issues
   - Provides specific recommendations for achieving compliance
@@ -17,11 +17,12 @@ A web application for analyzing internal documents against compliance regulation
 
 ## Tech Stack
 
-- **Frontend**: Gradio (Python web UI framework)
+- **Frontend**: React + TypeScript (Vite)
+- **Backend**: FastAPI with SSE streaming
 - **Document Parsing**: LlamaParse (via LlamaCloud API)
 - **Vector Storage**: LlamaCloud Managed Index
 - **LLM**: Google Gemini 3 Pro
-- **Language**: Python 3.11+
+- **Language**: Python 3.11+, TypeScript
 
 ## Setup
 
@@ -58,13 +59,26 @@ CHUNK_OVERLAP=200
 # Logging
 LOG_LEVEL=INFO
 ```
-## Running the Application (in src folder)
+## Running the Application
+
+### Backend (FastAPI)
 
 ```bash
-python -m compliance_auditor.main
+cd compliance-auditor
+PYTHONPATH=src uvicorn compliance_auditor.api.main:app --reload
 ```
 
-The application will start at `http://localhost:7860`
+The API will be available at `http://localhost:8000`
+
+### Frontend (React)
+
+```bash
+cd src/frontend
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`
 
 ## Usage
 
@@ -86,16 +100,37 @@ The application will start at `http://localhost:7860`
 ```
 compliance-auditor/
 ├── src/
-│   └── compliance_auditor/
-│       ├── __init__.py
-│       ├── app.py              # Gradio UI and main application logic
-│       ├── config.py           # Configuration management with Pydantic
-│       ├── main.py             # Application entry point
-│       └── llama_cloud/
-│           ├── __init__.py
-│           ├── index.py        # LlamaCloud index management and Gemini chat
-│           └── parser.py       # LlamaParse document parsing
+│   ├── compliance_auditor/          # Python backend
+│   │   ├── __init__.py
+│   │   ├── config.py                # Configuration with Pydantic
+│   │   ├── main.py                  # FastAPI launcher
+│   │   ├── llama_cloud/             # LlamaCloud integration
+│   │   │   ├── __init__.py
+│   │   │   ├── index.py             # Vector index & retrieval
+│   │   │   └── parser.py            # Document parsing
+│   │   └── api/                     # FastAPI routes
+│   │       ├── main.py              # FastAPI app with CORS
+│   │       ├── services.py          # Core business logic
+│   │       ├── routes/
+│   │       │   ├── documents.py     # Document CRUD
+│   │       │   └── chat.py          # SSE streaming chat
+│   │       └── schemas/
+│   │           ├── documents.py
+│   │           └── chat.py
+│   │
+│   └── frontend/                    # React frontend
+│       ├── src/
+│       │   ├── App.tsx
+│       │   ├── components/
+│       │   │   ├── DocumentPanel.tsx
+│       │   │   └── ChatPanel.tsx
+│       │   ├── hooks/
+│       │   │   └── useChat.ts
+│       │   └── api/
+│       │       └── client.ts
+│       └── package.json
+│
 ├── requirements.txt
-├── .env                        # Environment variables (not in git)
+├── .env                             # Environment variables (not in git)
 └── README.md
 ```
