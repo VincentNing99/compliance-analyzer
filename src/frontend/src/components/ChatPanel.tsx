@@ -46,43 +46,44 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ margin: 0 }}>Chat</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <h2 style={{ margin: 0, fontSize: '11px', color: '#2dd4bf', textTransform: 'uppercase' }}>
+          [ TERMINAL ]
+        </h2>
         <button
           onClick={clearChat}
           disabled={isStreaming}
           style={{
-            background: '#f3f4f6',
-            border: 'none',
-            borderRadius: '0.5rem',
-            padding: '0.5rem 1rem',
+            background: '#134e4a',
+            border: '2px solid #14b8a6',
+            padding: '0.4rem 0.75rem',
             cursor: 'pointer',
+            color: '#ffffff',
+            fontSize: '8px',
           }}
         >
-          Clear
+          CLEAR
         </button>
       </div>
 
       {/* Summary indicator */}
-      <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>
-        Selected: {selectedCompliance.length} compliance, {selectedInternal.length} internal docs
-        {requirements.length > 0 && ` | ${requirements.length} requirements extracted`}
+      <div style={{ fontSize: '8px', color: '#5eead4', marginBottom: '0.5rem' }}>
+        &gt; SELECTED: {selectedCompliance.length} REGS, {selectedInternal.length} DOCS
+        {requirements.length > 0 && ` | ${requirements.length} REQS`}
       </div>
 
       {/* Messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        marginBottom: '1rem',
-        background: '#fafafa',
+        padding: '0.75rem',
+        marginBottom: '0.75rem',
+        background: '#0a0a0f',
       }}>
         {messages.length === 0 && !isStreaming && (
-          <p style={{ color: '#666', textAlign: 'center' }}>
-            Select documents and ask about compliance requirements...
+          <p style={{ color: '#5eead4', textAlign: 'center', fontSize: '8px' }}>
+            SELECT DOCS AND ASK ABOUT COMPLIANCE...
           </p>
         )}
 
@@ -90,23 +91,27 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
           <div
             key={index}
             style={{
-              marginBottom: '1rem',
+              marginBottom: '0.75rem',
               display: 'flex',
               justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
             }}
           >
             <div
               style={{
-                maxWidth: '80%',
-                padding: '0.75rem 1rem',
-                borderRadius: msg.role === 'user' ? '1rem 1rem 0.25rem 1rem' : '1rem 1rem 1rem 0.25rem',
-                background: msg.role === 'user' ? '#4f46e5' : 'white',
-                color: msg.role === 'user' ? 'white' : 'black',
-                border: msg.role === 'user' ? 'none' : '1px solid #e5e7eb',
+                maxWidth: '85%',
+                padding: '0.5rem 0.75rem',
+                background: msg.role === 'user' ? '#14b8a6' : '#134e4a',
+                color: '#ffffff',
+                border: `2px solid ${msg.role === 'user' ? '#14b8a6' : '#0d9488'}`,
+                borderRadius: '8px',
               }}
               className={msg.role === 'assistant' ? 'markdown-content' : ''}
             >
-              {msg.role === 'user' ? msg.content : <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>}
+              {msg.role === 'user' ? (
+                <span style={{ fontSize: '9px' }}>&gt; {msg.content}</span>
+              ) : (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+              )}
             </div>
           </div>
         ))}
@@ -114,14 +119,15 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
         {/* Streaming status */}
         {isStreaming && status && (
           <div style={{
-            padding: '0.5rem 1rem',
-            background: '#e0f2fe',
-            borderRadius: '0.5rem',
-            marginBottom: '1rem',
-            fontSize: '0.875rem',
-            color: '#0369a1',
+            padding: '0.5rem 0.75rem',
+            background: '#134e4a',
+            border: '2px solid #5eead4',
+            borderRadius: '8px',
+            marginBottom: '0.75rem',
+            fontSize: '8px',
+            color: '#5eead4',
           }}>
-            {status}
+            &gt;&gt; {status.toUpperCase()}
           </div>
         )}
 
@@ -129,23 +135,23 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
         {isStreaming && streamingContent && (
           <div
             style={{
-              marginBottom: '1rem',
+              marginBottom: '0.75rem',
               display: 'flex',
               justifyContent: 'flex-start',
             }}
           >
             <div
               style={{
-                maxWidth: '80%',
-                padding: '0.75rem 1rem',
-                borderRadius: '1rem 1rem 1rem 0.25rem',
-                background: 'white',
-                border: '1px solid #e5e7eb',
+                maxWidth: '85%',
+                padding: '0.5rem 0.75rem',
+                background: '#134e4a',
+                border: '2px solid #0d9488',
+                borderRadius: '8px',
               }}
               className="markdown-content"
             >
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
-              <span style={{ animation: 'blink 1s infinite' }}>|</span>
+              <span style={{ color: '#2dd4bf', animation: 'blink 0.5s infinite' }}>_</span>
             </div>
           </div>
         )}
@@ -154,38 +160,49 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
       </div>
 
       {/* Input */}
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div style={{ position: 'relative' }}>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about compliance requirements..."
+          placeholder="ENTER QUERY..."
           disabled={isStreaming}
           style={{
-            flex: 1,
-            padding: '0.75rem 1rem',
-            borderRadius: '1.5rem',
-            border: '2px solid #e5e7eb',
-            fontSize: '1rem',
+            width: '100%',
+            padding: '1rem 3rem 1rem 1rem',
+            border: '2px solid #14b8a6',
+            borderRadius: '24px',
+            fontSize: '11px',
             outline: 'none',
+            background: '#0a0a0f',
+            color: '#ffffff',
+            height: '48px',
+            fontFamily: 'inherit',
           }}
         />
         <button
           onClick={handleSend}
           disabled={isStreaming || !input.trim()}
           style={{
-            padding: '0.75rem 1.5rem',
-            borderRadius: '1.5rem',
+            position: 'absolute',
+            right: '6px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '36px',
+            height: '36px',
             border: 'none',
-            background: '#4f46e5',
-            color: 'white',
-            fontWeight: 600,
+            borderRadius: '50%',
+            background: isStreaming || !input.trim() ? '#134e4a' : '#14b8a6',
+            color: '#ffffff',
             cursor: isStreaming || !input.trim() ? 'not-allowed' : 'pointer',
-            opacity: isStreaming || !input.trim() ? 0.5 : 1,
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          Send
+          ▲
         </button>
       </div>
     </div>

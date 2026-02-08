@@ -17,23 +17,22 @@ function App() {
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
       {/* Header */}
       <header style={{
-        padding: '1rem 2rem',
-        background: '#f8fafc',
-        borderBottom: '1px solid #e2e8f0',
+        padding: '1rem 1.5rem',
+        background: '#0a1a1a',
       }}>
         <h1 style={{
           margin: 0,
-          fontSize: '1.5rem',
-          color: '#4f46e5',
+          fontSize: '14px',
+          color: '#2dd4bf',
+          textShadow: '2px 2px 0 #0d9488',
         }}>
-          Compliance Auditor
+          COMPLIANCE AUDITOR
         </h1>
-        <p style={{ margin: '0.25rem 0 0 0', color: '#64748b', fontSize: '0.875rem' }}>
-          Analyze documents against regulatory requirements with AI
+        <p style={{ margin: '0.5rem 0 0 0', color: '#5eead4', fontSize: '8px' }}>
+          ANALYZE DOCS VS REGULATIONS WITH AI
         </p>
       </header>
 
@@ -42,12 +41,13 @@ function App() {
         flex: 1,
         display: 'flex',
         overflow: 'hidden',
+        background: '#0a0a0f',
       }}>
         {/* Left Panel - Documents */}
         <div style={{
-          width: '350px',
-          borderRight: '1px solid #e2e8f0',
+          width: '320px',
           overflow: 'auto',
+          background: '#0a1a1a',
         }}>
           <DocumentPanel
             selectedCompliance={selectedCompliance}
@@ -61,6 +61,7 @@ function App() {
         <div style={{
           flex: 1,
           overflow: 'auto',
+          background: '#0a0a0f',
         }}>
           <ChatPanel
             selectedCompliance={selectedCompliance}

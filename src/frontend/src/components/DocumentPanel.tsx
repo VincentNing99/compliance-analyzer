@@ -105,36 +105,59 @@ export function DocumentPanel({
   const currentType: DocType = activeTab === 'compliance' ? 'regulation' : 'company_doc';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem' }}>
-      <h2 style={{ marginTop: 0 }}>Documents</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <h2 style={{ margin: 0, fontSize: '11px', color: '#2dd4bf', textTransform: 'uppercase' }}>
+          [ DOCUMENTS ]
+        </h2>
+        <button
+          onClick={() => { setIsLoading(true); refreshDocs(); }}
+          disabled={isLoading}
+          style={{
+            background: '#134e4a',
+            border: '2px solid #14b8a6',
+            padding: '0.3rem 0.5rem',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            color: '#ffffff',
+            fontSize: '10px',
+            borderRadius: '4px',
+          }}
+        >
+          ↻
+        </button>
+      </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.75rem' }}>
         <button
           onClick={() => setActiveTab('compliance')}
           style={{
-            padding: '0.5rem 1rem',
-            background: activeTab === 'compliance' ? '#4f46e5' : '#e5e7eb',
-            color: activeTab === 'compliance' ? 'white' : 'black',
-            border: 'none',
-            borderRadius: '0.5rem',
+            padding: '0.5rem 0.75rem',
+            background: activeTab === 'compliance' ? '#14b8a6' : '#134e4a',
+            color: '#ffffff',
+            border: '2px solid',
+            borderColor: activeTab === 'compliance' ? '#14b8a6' : '#0d9488',
             cursor: 'pointer',
+            fontSize: '8px',
+            borderRadius: '4px',
           }}
         >
-          Compliance ({complianceDocs.length})
+          REGS ({complianceDocs.length})
         </button>
         <button
           onClick={() => setActiveTab('internal')}
           style={{
-            padding: '0.5rem 1rem',
-            background: activeTab === 'internal' ? '#4f46e5' : '#e5e7eb',
-            color: activeTab === 'internal' ? 'white' : 'black',
-            border: 'none',
-            borderRadius: '0.5rem',
+            padding: '0.5rem 0.75rem',
+            background: activeTab === 'internal' ? '#14b8a6' : '#134e4a',
+            color: '#ffffff',
+            border: '2px solid',
+            borderColor: activeTab === 'internal' ? '#14b8a6' : '#0d9488',
             cursor: 'pointer',
+            fontSize: '8px',
+            borderRadius: '4px',
           }}
         >
-          Internal ({internalDocs.length})
+          DOCS ({internalDocs.length})
         </button>
       </div>
 
@@ -142,18 +165,19 @@ export function DocumentPanel({
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.5rem',
         padding: '0.5rem',
-        marginBottom: '1rem',
-        minHeight: '200px',
+        marginBottom: '0.75rem',
+        minHeight: '150px',
+        background: '#0a0a0f',
+        borderRadius: '8px',
       }}>
         {isLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', gap: '0.5rem' }}>
             <div className="spinner" />
+            <span style={{ fontSize: '8px', color: '#5eead4' }}>LOADING...</span>
           </div>
         ) : currentDocs.length === 0 ? (
-          <p style={{ color: '#666', textAlign: 'center' }}>No documents yet</p>
+          <p style={{ color: '#5eead4', textAlign: 'center', fontSize: '8px' }}>NO DOCS YET</p>
         ) : (
           currentDocs.map(docId => (
             <div
@@ -162,31 +186,32 @@ export function DocumentPanel({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '0.5rem',
-                borderBottom: '1px solid #f0f0f0',
+                padding: '0.4rem',
+                borderBottom: '1px solid #134e4a',
               }}
             >
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#ffffff' }}>
                 <input
                   type="checkbox"
                   checked={currentSelected.includes(docId)}
                   onChange={() => toggleSelection(docId, currentType)}
+                  style={{ accentColor: '#14b8a6' }}
                 />
-                <span>{docId}</span>
+                <span style={{ fontSize: '8px' }}>{docId}</span>
               </label>
               <button
                 onClick={() => handleDelete(docId, currentType)}
                 style={{
-                  background: '#fee2e2',
-                  color: '#dc2626',
+                  background: '#0d9488',
+                  color: '#ffffff',
                   border: 'none',
-                  borderRadius: '0.25rem',
-                  padding: '0.25rem 0.5rem',
+                  padding: '0.2rem 0.4rem',
                   cursor: 'pointer',
-                  fontSize: '0.75rem',
+                  fontSize: '7px',
+                  borderRadius: '4px',
                 }}
               >
-                Delete
+                DEL
               </button>
             </div>
           ))
@@ -195,31 +220,34 @@ export function DocumentPanel({
 
       {/* Upload Section */}
       <div style={{
-        background: '#f8fafc',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        border: '2px dashed #cbd5e1',
+        background: '#134e4a',
+        padding: '0.75rem',
+        borderRadius: '8px',
       }}>
-        <h3 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Upload Document</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '9px', color: '#5eead4' }}>
+          + UPLOAD
+        </h3>
 
-        <div style={{ marginBottom: '0.5rem' }}>
-          <label style={{ marginRight: '1rem' }}>
+        <div style={{ marginBottom: '0.5rem', fontSize: '8px' }}>
+          <label style={{ marginRight: '0.75rem', color: '#ffffff' }}>
             <input
               type="radio"
               name="uploadType"
               checked={uploadType === 'regulation'}
               onChange={() => setUploadType('regulation')}
+              style={{ accentColor: '#14b8a6' }}
             />
-            {' '}Compliance
+            {' '}REG
           </label>
-          <label>
+          <label style={{ color: '#ffffff' }}>
             <input
               type="radio"
               name="uploadType"
               checked={uploadType === 'company_doc'}
               onChange={() => setUploadType('company_doc')}
+              style={{ accentColor: '#14b8a6' }}
             />
-            {' '}Internal
+            {' '}DOC
           </label>
         </div>
 
@@ -228,16 +256,16 @@ export function DocumentPanel({
           accept=".pdf,.docx,.doc,.txt,.pptx"
           onChange={handleUpload}
           disabled={isUploading}
-          style={{ marginBottom: '0.5rem' }}
+          style={{ marginBottom: '0.5rem', fontSize: '8px', color: '#ffffff' }}
         />
 
         {uploadStatus && (
           <p style={{
             margin: 0,
-            fontSize: '0.875rem',
-            color: uploadStatus.startsWith('Error') ? '#dc2626' : '#059669',
+            fontSize: '8px',
+            color: uploadStatus.startsWith('Error') ? '#f87171' : '#5eead4',
           }}>
-            {uploadStatus}
+            {uploadStatus.toUpperCase()}
           </p>
         )}
       </div>
