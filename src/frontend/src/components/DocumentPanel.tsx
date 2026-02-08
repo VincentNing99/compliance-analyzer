@@ -106,7 +106,23 @@ export function DocumentPanel({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem' }}>
-      <h2 style={{ marginTop: 0 }}>Documents</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <h2 style={{ margin: 0 }}>Documents</h2>
+        <button
+          onClick={() => { setIsLoading(true); refreshDocs(); }}
+          disabled={isLoading}
+          style={{
+            background: '#f3f4f6',
+            border: 'none',
+            borderRadius: '0.5rem',
+            padding: '0.5rem 0.75rem',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            fontSize: '1rem',
+          }}
+        >
+          ↻
+        </button>
+      </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>

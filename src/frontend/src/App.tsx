@@ -23,7 +23,6 @@ function App() {
       <header style={{
         padding: '1rem 2rem',
         background: '#f8fafc',
-        borderBottom: '1px solid #e2e8f0',
       }}>
         <h1 style={{
           margin: 0,
@@ -46,8 +45,8 @@ function App() {
         {/* Left Panel - Documents */}
         <div style={{
           width: '350px',
-          borderRight: '1px solid #e2e8f0',
           overflow: 'auto',
+          background: '#f8fafc',
         }}>
           <DocumentPanel
             selectedCompliance={selectedCompliance}

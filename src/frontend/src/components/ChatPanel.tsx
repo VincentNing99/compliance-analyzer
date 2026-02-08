@@ -154,7 +154,7 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
       </div>
 
       {/* Input */}
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div style={{ position: 'relative' }}>
         <input
           type="text"
           value={input}
@@ -163,29 +163,37 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
           placeholder="Ask about compliance requirements..."
           disabled={isStreaming}
           style={{
-            flex: 1,
-            padding: '0.75rem 1rem',
+            width: '100%',
+            padding: '1rem 3.5rem 1rem 1.25rem',
             borderRadius: '1.5rem',
             border: '2px solid #e5e7eb',
             fontSize: '1rem',
             outline: 'none',
+            height: '56px',
           }}
         />
         <button
           onClick={handleSend}
           disabled={isStreaming || !input.trim()}
           style={{
-            padding: '0.75rem 1.5rem',
-            borderRadius: '1.5rem',
+            position: 'absolute',
+            right: '8px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
             border: 'none',
-            background: '#4f46e5',
+            background: isStreaming || !input.trim() ? '#e5e7eb' : '#4f46e5',
             color: 'white',
-            fontWeight: 600,
             cursor: isStreaming || !input.trim() ? 'not-allowed' : 'pointer',
-            opacity: isStreaming || !input.trim() ? 0.5 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.25rem',
           }}
         >
-          Send
+          ↑
         </button>
       </div>
     </div>
