@@ -2,6 +2,7 @@
  * Compliance Auditor - React Frontend
  *
  * Two-panel layout: Documents (left) and Chat (right)
+ * Medieval Parchment Theme
  */
 import { useState } from 'react';
 import { DocumentPanel } from './components/DocumentPanel';
@@ -17,22 +18,39 @@ function App() {
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
+      fontFamily: "'Crimson Text', Georgia, serif",
+      background: '#0d0a08',
     }}>
-      {/* Header */}
+      {/* Header - Dark Elder Scrolls Banner */}
       <header style={{
-        padding: '1rem 1.5rem',
-        background: '#0a1a1a',
+        padding: '1.25rem 2rem',
+        background: 'linear-gradient(180deg, #1a1410 0%, #0d0a08 100%)',
+        borderBottom: '3px solid #c9a227',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
       }}>
-        <h1 style={{
-          margin: 0,
-          fontSize: '14px',
-          color: '#2dd4bf',
-          textShadow: '2px 2px 0 #0d9488',
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Crystal ball */}
+          <span style={{ fontSize: '1.8rem' }}>&#128302;</span>
+          <h1 style={{
+            margin: 0,
+            fontFamily: "'Cinzel', serif",
+            fontSize: '1.75rem',
+            fontWeight: 700,
+            color: '#ffd700',
+            letterSpacing: '0.08em',
+            textShadow: '0 0 10px rgba(255,215,0,0.4), 2px 2px 4px rgba(0,0,0,0.8)',
+          }}>
+            Compliance Auditor
+          </h1>
+        </div>
+        <p style={{
+          margin: '0.5rem 0 0 0',
+          color: '#a89070',
+          fontSize: '0.95rem',
+          fontStyle: 'italic',
+          textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
         }}>
-          COMPLIANCE AUDITOR
-        </h1>
-        <p style={{ margin: '0.5rem 0 0 0', color: '#5eead4', fontSize: '8px' }}>
-          ANALYZE DOCS VS REGULATIONS WITH AI
+          Analyze thy documents against the decrees of the realm
         </p>
       </header>
 
@@ -41,13 +59,15 @@ function App() {
         flex: 1,
         display: 'flex',
         overflow: 'hidden',
-        background: '#0a0a0f',
+        background: '#0d0a08',
       }}>
-        {/* Left Panel - Documents */}
+        {/* Left Panel - Documents (Dark aged leather) */}
         <div style={{
-          width: '320px',
+          width: '340px',
           overflow: 'auto',
-          background: '#0a1a1a',
+          background: 'linear-gradient(180deg, #1a1410 0%, #12100c 100%)',
+          borderRight: '2px solid #4a3828',
+          boxShadow: '2px 0 12px rgba(0,0,0,0.5)',
         }}>
           <DocumentPanel
             selectedCompliance={selectedCompliance}
@@ -57,11 +77,11 @@ function App() {
           />
         </div>
 
-        {/* Right Panel - Chat */}
+        {/* Right Panel - Chat (Dark parchment) */}
         <div style={{
           flex: 1,
           overflow: 'auto',
-          background: '#0a0a0f',
+          background: 'linear-gradient(180deg, #1a1410 0%, #12100c 100%)',
         }}>
           <ChatPanel
             selectedCompliance={selectedCompliance}

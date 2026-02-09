@@ -1,5 +1,6 @@
 /**
  * Chat panel with message history and streaming input.
+ * Medieval Parchment Theme
  */
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -46,44 +47,69 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '0.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1rem' }}>
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <h2 style={{ margin: 0, fontSize: '11px', color: '#2dd4bf', textTransform: 'uppercase' }}>
-          [ TERMINAL ]
+        <h2 style={{
+          margin: 0,
+          fontFamily: "'Cinzel', serif",
+          fontSize: '1.1rem',
+          color: '#ffd700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          textShadow: '0 0 8px rgba(255,215,0,0.3), 1px 1px 2px rgba(0,0,0,0.8)',
+        }}>
+          <span style={{ color: '#c9a227' }}>&#9733;</span> Adjudgement
         </h2>
         <button
           onClick={clearChat}
           disabled={isStreaming}
           style={{
-            background: '#134e4a',
-            border: '2px solid #14b8a6',
-            padding: '0.4rem 0.75rem',
-            cursor: 'pointer',
-            color: '#ffffff',
-            fontSize: '8px',
+            background: 'linear-gradient(180deg, #2a2018 0%, #1a1410 100%)',
+            border: '2px solid #4a3828',
+            padding: '0.5rem 0.85rem',
+            cursor: isStreaming ? 'not-allowed' : 'pointer',
+            color: '#c9a227',
+            fontFamily: "'Cinzel', serif",
+            fontSize: '0.8rem',
+            borderRadius: '4px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.5)',
           }}
         >
-          CLEAR
+          Clear
         </button>
       </div>
 
       {/* Summary indicator */}
-      <div style={{ fontSize: '8px', color: '#5eead4', marginBottom: '0.5rem' }}>
-        &gt; SELECTED: {selectedCompliance.length} REGS, {selectedInternal.length} DOCS
-        {requirements.length > 0 && ` | ${requirements.length} REQS`}
+      <div style={{
+        fontSize: '0.85rem',
+        color: '#a89070',
+        marginBottom: '0.75rem',
+        fontStyle: 'italic',
+        fontFamily: "'Cinzel', serif",
+        borderBottom: '2px solid #4a3828',
+        paddingBottom: '0.5rem',
+      }}>
+        <span style={{ color: '#c9a227' }}>&#9670;</span> {selectedCompliance.length} decrees and {selectedInternal.length} scrolls selected
+        {requirements.length > 0 && ` | ${requirements.length} requirements found`}
       </div>
 
       {/* Messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '0.75rem',
-        marginBottom: '0.75rem',
-        background: '#0a0a0f',
+        padding: '1rem',
+        marginBottom: '1rem',
+        background: 'linear-gradient(180deg, #0d0a08 0%, #1a1410 50%, #0d0a08 100%)',
+        border: '2px solid #4a3828',
+        borderRadius: '6px',
+        boxShadow: 'inset 0 2px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3)',
       }}>
         {messages.length === 0 && !isStreaming && (
-          <p style={{ color: '#5eead4', textAlign: 'center', fontSize: '8px' }}>
-            SELECT DOCS AND ASK ABOUT COMPLIANCE...
+          <p style={{ color: '#a89070', textAlign: 'center', fontStyle: 'italic', fontFamily: "'Cinzel', serif" }}>
+            Select thy documents and pose thy question to the Oracle...
           </p>
         )}
 
@@ -91,7 +117,7 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
           <div
             key={index}
             style={{
-              marginBottom: '0.75rem',
+              marginBottom: '1rem',
               display: 'flex',
               justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
             }}
@@ -99,16 +125,22 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
             <div
               style={{
                 maxWidth: '85%',
-                padding: '0.5rem 0.75rem',
-                background: msg.role === 'user' ? '#14b8a6' : '#134e4a',
-                color: '#ffffff',
-                border: `2px solid ${msg.role === 'user' ? '#14b8a6' : '#0d9488'}`,
-                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                background: msg.role === 'user'
+                  ? 'linear-gradient(180deg, #2a2018 0%, #1a1410 100%)'
+                  : 'linear-gradient(180deg, #1a1410 0%, #12100c 100%)',
+                color: msg.role === 'user' ? '#ffd700' : '#d4c4a8',
+                border: msg.role === 'user' ? '2px solid #4a3828' : '2px solid #c9a227',
+                borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                boxShadow: msg.role === 'user'
+                  ? '0 2px 8px rgba(0,0,0,0.5)'
+                  : '0 0 12px rgba(201,162,39,0.2), 0 2px 8px rgba(0,0,0,0.4)',
+                textShadow: msg.role === 'user' ? '0 1px 2px rgba(0,0,0,0.5)' : 'none',
               }}
               className={msg.role === 'assistant' ? 'markdown-content' : ''}
             >
               {msg.role === 'user' ? (
-                <span style={{ fontSize: '9px' }}>&gt; {msg.content}</span>
+                <span style={{ fontStyle: 'italic' }}>"{msg.content}"</span>
               ) : (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
               )}
@@ -119,15 +151,17 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
         {/* Streaming status */}
         {isStreaming && status && (
           <div style={{
-            padding: '0.5rem 0.75rem',
-            background: '#134e4a',
-            border: '2px solid #5eead4',
-            borderRadius: '8px',
-            marginBottom: '0.75rem',
-            fontSize: '8px',
-            color: '#5eead4',
+            padding: '0.6rem 1rem',
+            background: 'rgba(201,162,39,0.1)',
+            border: '2px dashed #4a3828',
+            borderRadius: '6px',
+            marginBottom: '1rem',
+            fontSize: '0.9rem',
+            color: '#c9a227',
+            fontStyle: 'italic',
+            fontFamily: "'Cinzel', serif",
           }}>
-            &gt;&gt; {status.toUpperCase()}
+            &#8987; {status}...
           </div>
         )}
 
@@ -135,7 +169,7 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
         {isStreaming && streamingContent && (
           <div
             style={{
-              marginBottom: '0.75rem',
+              marginBottom: '1rem',
               display: 'flex',
               justifyContent: 'flex-start',
             }}
@@ -143,15 +177,16 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
             <div
               style={{
                 maxWidth: '85%',
-                padding: '0.5rem 0.75rem',
-                background: '#134e4a',
-                border: '2px solid #0d9488',
-                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                background: 'linear-gradient(180deg, #1a1410 0%, #12100c 100%)',
+                border: '2px solid #c9a227',
+                borderRadius: '12px 12px 12px 2px',
+                boxShadow: '0 0 12px rgba(201,162,39,0.2), 0 2px 8px rgba(0,0,0,0.4)',
               }}
               className="markdown-content"
             >
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
-              <span style={{ color: '#2dd4bf', animation: 'blink 0.5s infinite' }}>_</span>
+              <span style={{ color: '#c9a227', animation: 'blink 0.7s infinite' }}>&#9618;</span>
             </div>
           </div>
         )}
@@ -159,50 +194,58 @@ export function ChatPanel({ selectedCompliance, selectedInternal }: ChatPanelPro
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input - Dark scroll style with send button */}
       <div style={{ position: 'relative' }}>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="ENTER QUERY..."
+          placeholder="Inscribe thy query..."
           disabled={isStreaming}
           style={{
             width: '100%',
-            padding: '1rem 3rem 1rem 1rem',
-            border: '2px solid #14b8a6',
+            padding: '1rem 3.5rem 1rem 1.25rem',
+            border: '2px solid #4a3828',
             borderRadius: '24px',
-            fontSize: '11px',
+            fontSize: '1rem',
             outline: 'none',
-            background: '#0a0a0f',
-            color: '#ffffff',
-            height: '48px',
-            fontFamily: 'inherit',
+            background: 'linear-gradient(180deg, #1a1410 0%, #12100c 100%)',
+            color: '#d4c4a8',
+            height: '56px',
+            fontFamily: "'Crimson Text', Georgia, serif",
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3)',
           }}
         />
         <button
           onClick={handleSend}
           disabled={isStreaming || !input.trim()}
+          title="Send thy message"
           style={{
             position: 'absolute',
-            right: '6px',
+            right: '8px',
             top: '50%',
             transform: 'translateY(-50%)',
-            width: '36px',
-            height: '36px',
-            border: 'none',
+            width: '42px',
+            height: '42px',
+            border: '2px solid #4a3828',
             borderRadius: '50%',
-            background: isStreaming || !input.trim() ? '#134e4a' : '#14b8a6',
-            color: '#ffffff',
+            background: isStreaming || !input.trim()
+              ? 'linear-gradient(180deg, #2a2018 0%, #1a1410 100%)'
+              : 'linear-gradient(180deg, #722f37 0%, #4a1c24 100%)',
+            color: isStreaming || !input.trim() ? '#5a4a38' : '#ffd700',
             cursor: isStreaming || !input.trim() ? 'not-allowed' : 'pointer',
-            fontSize: '14px',
+            fontSize: '1.3rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            boxShadow: isStreaming || !input.trim()
+              ? '0 2px 6px rgba(0,0,0,0.4)'
+              : '0 0 12px rgba(139,0,0,0.5), 0 2px 6px rgba(0,0,0,0.5)',
+            textShadow: isStreaming || !input.trim() ? 'none' : '0 0 6px rgba(255,215,0,0.4)',
           }}
         >
-          ▲
+          &#10148;
         </button>
       </div>
     </div>
